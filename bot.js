@@ -5,32 +5,67 @@ var Twit = require('twit');
 var T = new Twit(require('./config.js'));
 
 // This is the URL of a search for the latest tweets on the '#mediaarts' hashtag.
-var mediaArtsSearch = {q: "#mediaarts", count: 10, result_type: "recent"}; 
+var movieSearch = {q: "#movie", count: 10, result_type: "popular", lang: "en"}; 
 
 // This function finds the latest tweet with the #mediaarts hashtag, and retweets it.
 function retweetLatest() {
-	T.get('search/tweets', mediaArtsSearch, function (error, data) {
-	  // log out any errors and responses
-	  console.log(error, data);
-	  // If our search request to the server had no errors...
-	  if (!error) {
-	  	// ...then we grab the ID of the tweet we want to retweet...
-		var retweetId = data.statuses[0].id_str;
-		// ...and then we tell Twitter we want to retweet it!
-		T.post('statuses/retweet/' + retweetId, { }, function (error, response) {
-			if (response) {
-				console.log('Success! Check your bot, it should have retweeted something.')
+	T.get('search/tweets', movieSearch, function (error, data) {
+		// log out any errors and responses
+		console.log(error, data);
+		// If our search request to the server had no errors...
+		if (!error) {
+			// Dictionary containing all hashtags and their count in the search
+			var hashtags = {}
+			// Iterate over retreived tweets
+			for (tweet of data.statuses) {
+				// Iterate over hastags in each tweet
+				for (tag of tweet.entities.hashtags) {
+					// Add them to the hashtags dictionary or increase their count	
+					if (tag in hashtags) {
+						hashtags[tag] += 1
+					} else {
+						hashtags[tag] = 1
+					}
+				}
 			}
-			// If there was an error with our Twitter call, we print it out here.
-			if (error) {
-				console.log('There was an error with Twitter:', error);
+			var mostPopular = null
+			var mostPopularCount = 0
+			// Iterate over gathered hashtags
+			for (key in hashtags) {
+				// Set as most popular if has higher count than previously most popular
+				if (hashtags[key] > mostPopularCount) {
+					mostPopular = key
+					mostPopularCount = hashtags[key]
+				}
 			}
-		})
-	  }
-	  // However, if our original search request had an error, we want to print it out here.
-	  else {
-	  	console.log('There was an error with your hashtag search:', error);
-	  }
+			// Tweet which movie is the most popular right now
+			T.post('statuses/update', {status: "The movie " + mostPopular + " is popular right now!"}, function (error, response) {
+				if (response) {
+					console.log('Success! Check your bot, it should have retweeted something.')
+				}
+				// If there was an error with our Twitter call, we print it out here.
+				if (error) {
+					console.log('There was an error with Twitter:', error);
+				}
+			})
+			/*
+			// ...then we grab the ID of the tweet we want to retweet...
+			var retweetId = data.statuses[0].id_str;
+			// ...and then we tell Twitter we want to retweet it!
+			T.post('statuses/retweet/' + retweetId, { }, function (error, response) {
+				if (response) {
+					console.log('Success! Check your bot, it should have retweeted something.')
+				}
+				// If there was an error with our Twitter call, we print it out here.
+				if (error) {
+					console.log('There was an error with Twitter:', error);
+				}
+			})*/
+		}
+		// However, if our original search request had an error, we want to print it out here.
+		else {
+			console.log('There was an error with your hashtag search:', error);
+		}
 	});
 }
 
