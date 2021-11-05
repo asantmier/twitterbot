@@ -9,6 +9,15 @@ var movieSearch = {q: "#movie", count: 50, result_type: "recent", lang: "en"};
 
 var bannedWords = ["movie", "film", "cinema", "best", "movies", "films"];
 
+//This sets up the twitter username to track mentions
+const twitterUsername = '@MovieBott';
+
+// This sets up a user stream
+var stream = T.stream('statuses/filter', { track: twitterUsername });
+
+// This calls the favoriteMovie function once the mention is found
+stream.on('tweet', favoriteMovie);
+
 // This function finds the latest tweet with the #mediaarts hashtag, and retweets it.
 function retweetLatest() {
 	T.get('search/tweets', movieSearch, function (error, data) {
@@ -49,8 +58,6 @@ function retweetLatest() {
 					mostPopularCount = hashtags[key]
 				}
 			}
-			console.log(hashtags)
-			console.log(mostPopular)
 			// Tweet which movie is the most popular right now
 			
 			T.post('statuses/update', {status: "A lot of people are talking about " + mostPopular + " right now!"}, function (error, response) {
@@ -81,6 +88,49 @@ function retweetLatest() {
 			console.log('There was an error with your hashtag search:', error);
 		}
 	});
+}
+
+// Responds to tweets asking the bot its favorite movie
+function favoriteMovie(tweet) {
+
+	var id = tweet.id_str;
+	var text = tweet.text;
+	var name = tweet.user.screen_name;
+
+	// regex looks for key-words in the text of the tweet
+	let regex = /(What is your favorite movie?)/gi;
+  
+	
+	let regexMatch = text.match(regex) || [];
+	let regexFound = regexMatch.length > 0;
+  
+	// this helps with errors, so you can see if the regex matched and if regexFound is true or false
+	console.log(regexMatch);
+	console.log(regexFound);
+  
+  
+	// checks text of tweet for mention of SNESSoundtracks
+	if (text.includes(twitterUsername) && regexFound === true) {
+  
+	  // Start a reply back to the sender
+	  var favMovieLink = "https://www.youtube.com/watch?v=k64P4l2Wmeg";
+	  var replyText = ("@" + name + " My favorite movie is: The Terminator (1984). I think the overall concept is cool, and I think its fun seeing bots like myself featured in films even if its sci fi. :)" + favMovieLink);
+  
+	  // Post that tweet
+	  T.post('statuses/update', { status: replyText, in_reply_to_status_id: id }, errorMessage);
+  
+	} else {
+	  console.log("The question: 'what is your favorite movie' was not mentioned.");
+	};
+  
+	function errorMessage(err, reply) {
+	  if (err) {
+		console.log(err.message);
+		console.log("Error");
+	  } else {
+		console.log('Tweeted: ' + reply.text);
+	  }
+	};
 }
 
 // Try to retweet something as soon as we run the program...
