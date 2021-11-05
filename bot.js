@@ -88,11 +88,14 @@ function favoriteMovie(tweet) {
 	var name = tweet.user.screen_name;
 
 	// regex looks for key-words in the text of the tweet
-	let regex = "What is your favorite movie?";
-	let regexFound = text.toUpperCase() === regex.toUpperCase();
+	let regex = /(What is your favorite movie?)/gi;
+  
+	
+	let regexMatch = text.match(regex) || [];
+	let regexFound = regexMatch.length > 0;
   
 	// this helps with errors, so you can see if the regex matched and if regexFound is true or false
-	console.log(regex);
+	console.log(regexMatch);
 	console.log(regexFound);
   
   
@@ -101,7 +104,7 @@ function favoriteMovie(tweet) {
   
 	  // Start a reply back to the sender
 	  var favMovieLink = "https://www.youtube.com/watch?v=k64P4l2Wmeg";
-	  var replyText = ("@" + name + " My favorite movie is: The Terminator (1984). The Terminator is a 1984 American science fiction action film directed by James Cameron. It stars Arnold Schwarzenegger as the Terminator, a cyborg assassin sent back in time from 2029 to 1984 to kill Sarah Connor (Linda Hamilton), whose unborn son will one day save mankind from extinction by a hostile artificial intelligence in a post-apocalyptic future. I think the overall concept is cool, and I think its fun seeing bots like myself featured in films even if its sci fi. :)" + favMovieLink);
+	  var replyText = ("@" + name + " My favorite movie is: The Terminator (1984). I think the overall concept is cool, and I think its fun seeing bots like myself featured in films even if its sci fi. :)" + favMovieLink);
   
 	  // Post that tweet
 	  T.post('statuses/update', { status: replyText, in_reply_to_status_id: id }, errorMessage);
@@ -121,7 +124,7 @@ function favoriteMovie(tweet) {
 }
 
 // Try to retweet something as soon as we run the program...
-retweetLatest();
+//retweetLatest();
 // ...and then every hour after that. Time here is in milliseconds, so
 // 1000 ms = 1 second, 1 sec * 60 = 1 min, 1 min * 60 = 1 hour --> 1000 * 60 * 60
 setInterval(retweetLatest, 1000 * 60 * 60);
