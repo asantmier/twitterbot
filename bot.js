@@ -40,7 +40,7 @@ async function getRating(movie) {
 	return rating
 }
 
-// This function finds the latest tweet with the #mediaarts hashtag, and retweets it.
+// This function finds the latest tweet with the #movie hashtag, and retweets it.
 function retweetLatest() {
 	T.get('search/tweets', movieSearch, async function (error, data) {
 		// log out any errors and responses
@@ -86,10 +86,10 @@ function retweetLatest() {
 			let rating = await getRating()
 			if (rating == undefined) {
 				// Notify if we couldn't find one
-				console.log("Movie not found on OMDb")
+				console.log("Movie not found on IMDb")
 			} else {
 				// If we did find one, describe the rating in a string
-				console.log("Movie successfully found on OMDb")
+				console.log("Movie successfully found on IMDb")
 				ratingString = " (" + rating + " rating on IMDb)"
 			}
 			// Tweet which movie is the most popular right now
