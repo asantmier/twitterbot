@@ -10,13 +10,11 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 // We need to include our configuration file
 var T = new Twit(require('./config.js'));
 
-// This is the URL of a search for the latest tweets on the '#mediaarts' hashtag.
-
+// This is the URL of a search for the latest tweets on the '#movie' hashtag.
 var movieSearch = {q: "#movie", count: 50, result_type: "recent", lang: "en"}; 
 
 // A list of common words that we don't want to include as candidates for most popular movie
 var bannedWords = ["movie", "film", "cinema", "best", "movies", "films"];
-
 
 //This sets up the twitter username to track mentions
 const twitterUsername = '@MovieBott';
@@ -151,6 +149,7 @@ function favoriteMovie(tweet) {
 	  }
 	};
 }
+
 // Try to retweet something as soon as we run the program...
 retweetLatest();
 // ...and then every hour after that. Time here is in milliseconds, so
