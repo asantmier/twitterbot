@@ -1,3 +1,6 @@
+// Helps to keep track of when MovieBott is active
+console.log("MovieBott starting up!");
+
 // Our Twitter library
 var Twit = require('twit');
 
@@ -5,7 +8,15 @@ var Twit = require('twit');
 var T = new Twit(require('./config.js'));
 
 // This is the URL of a search for the latest tweets on the '#mediaarts' hashtag.
-var movieSearch = {q: "#movie", count: 10, result_type: "popular", lang: "en"}; 
+var movieSearch = {q: "#movie", count: 10, result_type: "popular", lang: "en"};
+
+//This sets up the twitter username to track mentions
+const twitterUsername = '@MovieBott';
+
+// This sets up a user stream
+var stream = T.stream('statuses/filter', { track: twitterUsername });
+
+stream.on('tweet', favoriteMovie);
 
 // This function finds the latest tweet with the #mediaarts hashtag, and retweets it.
 function retweetLatest() {
@@ -69,8 +80,49 @@ function retweetLatest() {
 	});
 }
 
+// Responds to tweets asking the bot its favorite movie
+function favoriteMovie(tweet) {
+
+	var id = tweet.id_str;
+	var text = tweet.text;
+	var name = tweet.user.screen_name;
+
+	// regex looks for key-words in the text of the tweet
+	let regex = "What is your favorite movie?";
+	let regexFound = text.toUpperCase() === regex.toUpperCase();
+  
+	// this helps with errors, so you can see if the regex matched and if regexFound is true or false
+	console.log(regex);
+	console.log(regexFound);
+  
+  
+	// checks text of tweet for mention of SNESSoundtracks
+	if (text.includes(twitterUsername) && regexFound === true) {
+  
+	  // Start a reply back to the sender
+	  var favMovieLink = "https://www.youtube.com/watch?v=k64P4l2Wmeg";
+	  var replyText = ("@" + name + " My favorite movie is: The Terminator (1984). The Terminator is a 1984 American science fiction action film directed by James Cameron. It stars Arnold Schwarzenegger as the Terminator, a cyborg assassin sent back in time from 2029 to 1984 to kill Sarah Connor (Linda Hamilton), whose unborn son will one day save mankind from extinction by a hostile artificial intelligence in a post-apocalyptic future. I think the overall concept is cool, and I think its fun seeing bots like myself featured in films even if its sci fi. :)" + favMovieLink);
+  
+	  // Post that tweet
+	  T.post('statuses/update', { status: replyText, in_reply_to_status_id: id }, errorMessage);
+  
+	} else {
+	  console.log("The question: 'what is your favorite movie' was not mentioned.");
+	};
+  
+	function errorMessage(err, reply) {
+	  if (err) {
+		console.log(err.message);
+		console.log("Error");
+	  } else {
+		console.log('Tweeted: ' + reply.text);
+	  }
+	};
+}
+
 // Try to retweet something as soon as we run the program...
 retweetLatest();
 // ...and then every hour after that. Time here is in milliseconds, so
 // 1000 ms = 1 second, 1 sec * 60 = 1 min, 1 min * 60 = 1 hour --> 1000 * 60 * 60
 setInterval(retweetLatest, 1000 * 60 * 60);
+
