@@ -52,7 +52,7 @@ function retweetLatest() {
 			console.log(hashtags)
 			console.log(mostPopular)
 			// Tweet which movie is the most popular right now
-			/*
+			
 			T.post('statuses/update', {status: "A lot of people are talking about " + mostPopular + " right now!"}, function (error, response) {
 				if (response) {
 					console.log('Success! Check your bot, it should have retweeted something.')
@@ -61,7 +61,7 @@ function retweetLatest() {
 				if (error) {
 					console.log('There was an error with Twitter:', error);
 				}
-			})*/
+			})
 			/*
 			// ...then we grab the ID of the tweet we want to retweet...
 			var retweetId = data.statuses[0].id_str;
