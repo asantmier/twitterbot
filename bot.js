@@ -1,12 +1,16 @@
 // Our Twitter library
 var Twit = require('twit');
 
+// Use fetch for OMDb API
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
 // We need to include our configuration file
 var T = new Twit(require('./config.js'));
 
 // This is the URL of a search for the latest tweets on the '#mediaarts' hashtag.
 var movieSearch = {q: "#movie", count: 50, result_type: "recent", lang: "en"}; 
 
+// A list of common words that we don't want to include as candidates for most popular movie
 var bannedWords = ["movie", "film", "cinema", "best", "movies", "films"];
 
 //This sets up the twitter username to track mentions
@@ -18,9 +22,21 @@ var stream = T.stream('statuses/filter', { track: twitterUsername });
 // This calls the favoriteMovie function once the mention is found
 stream.on('tweet', favoriteMovie);
 
+// Gets the rating of the movie from OMDb API
+async function getRating(movie) {
+	var rating = null
+	await fetch('http://www.omdbapi.com/?apikey=a54ccb&t=' + movie)
+	.then(response => response.json())
+	.then(data => {
+	  rating = data['imdbRating']
+	});
+	
+	return rating
+}
+
 // This function finds the latest tweet with the #mediaarts hashtag, and retweets it.
 function retweetLatest() {
-	T.get('search/tweets', movieSearch, function (error, data) {
+	T.get('search/tweets', movieSearch, async function (error, data) {
 		// log out any errors and responses
 		console.log(error, data);
 		// If our search request to the server had no errors...
@@ -31,16 +47,17 @@ function retweetLatest() {
 			for (tweet of data.statuses) {
 				// Iterate over hastags in each tweet
 				for (tag of tweet.entities.hashtags) {
-					// Add them to the hashtags dictionary or increase their count
-					content = tag['text'].toLowerCase()
+					content = tag['text']
+					// We want to skip this hashtag if its one of our 'banned' words
 					skip = false
 					for (word of bannedWords) {
-						if (content.includes(word)) {
+						if (content.toLowerCase().includes(word)) {
 							skip = true
 							break
 						}
 					}
 					if (skip) continue
+					// Add them to the hashtags dictionary or increase their count
 					if (content in hashtags) {
 						hashtags[content] += 1
 					} else {
@@ -58,9 +75,19 @@ function retweetLatest() {
 					mostPopularCount = hashtags[key]
 				}
 			}
+			var ratingString = ""
+			// Look for a rating on this movie
+			let rating = await getRating()
+			if (rating == undefined) {
+				// Notify if we couldn't find one
+				console.log("Movie not found on OMDb")
+			} else {
+				// If we did find one, describe the rating in a string
+				console.log("Movie successfully found on OMDb")
+				ratingString = " (" + rating + " rating on IMDb)"
+			}
 			// Tweet which movie is the most popular right now
-			
-			T.post('statuses/update', {status: "A lot of people are talking about " + mostPopular + " right now!"}, function (error, response) {
+			T.post('statuses/update', {status: "A lot of people are talking about #" + mostPopular + ratingString + " right now!"}, function (error, response) {
 				if (response) {
 					console.log('Success! Check your bot, it should have retweeted something.')
 				}
@@ -69,19 +96,6 @@ function retweetLatest() {
 					console.log('There was an error with Twitter:', error);
 				}
 			})
-			/*
-			// ...then we grab the ID of the tweet we want to retweet...
-			var retweetId = data.statuses[0].id_str;
-			// ...and then we tell Twitter we want to retweet it!
-			T.post('statuses/retweet/' + retweetId, { }, function (error, response) {
-				if (response) {
-					console.log('Success! Check your bot, it should have retweeted something.')
-				}
-				// If there was an error with our Twitter call, we print it out here.
-				if (error) {
-					console.log('There was an error with Twitter:', error);
-				}
-			})*/
 		}
 		// However, if our original search request had an error, we want to print it out here.
 		else {
@@ -132,7 +146,6 @@ function favoriteMovie(tweet) {
 	  }
 	};
 }
-
 // Try to retweet something as soon as we run the program...
 retweetLatest();
 // ...and then every hour after that. Time here is in milliseconds, so
