@@ -134,7 +134,7 @@ function favoriteMovie(tweet) {
   
 	  // Start a reply back to the sender
 	  var favMovieLink = "https://www.youtube.com/watch?v=k64P4l2Wmeg";
-	  var replyText = ("@" + name + " My favorite movie is: The Terminator (1984). I think the overall concept is cool, and I think its fun seeing bots like myself featured in films even if its sci fi. :)" + favMovieLink);
+	  var replyText = ("@" + name + " My favorite movie is: The Terminator (1984). I think the overall concept is cool, and I think it's fun seeing bots like myself featured in films even if it's sci-fi. :)" + favMovieLink);
   
 	  // Post that tweet
 	  T.post('statuses/update', { status: replyText, in_reply_to_status_id: id }, errorMessage);
