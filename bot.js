@@ -5,7 +5,9 @@ var Twit = require('twit');
 var T = new Twit(require('./config.js'));
 
 // This is the URL of a search for the latest tweets on the '#mediaarts' hashtag.
-var movieSearch = {q: "#movie", count: 10, result_type: "popular", lang: "en"}; 
+var movieSearch = {q: "#movie", count: 50, result_type: "recent", lang: "en"}; 
+
+var bannedWords = ["movie", "film", "cinema", "best", "movies", "films"];
 
 // This function finds the latest tweet with the #mediaarts hashtag, and retweets it.
 function retweetLatest() {
@@ -20,11 +22,20 @@ function retweetLatest() {
 			for (tweet of data.statuses) {
 				// Iterate over hastags in each tweet
 				for (tag of tweet.entities.hashtags) {
-					// Add them to the hashtags dictionary or increase their count	
-					if (tag in hashtags) {
-						hashtags[tag] += 1
+					// Add them to the hashtags dictionary or increase their count
+					content = tag['text'].toLowerCase()
+					skip = false
+					for (word of bannedWords) {
+						if (content.includes(word)) {
+							skip = true
+							break
+						}
+					}
+					if (skip) continue
+					if (content in hashtags) {
+						hashtags[content] += 1
 					} else {
-						hashtags[tag] = 1
+						hashtags[content] = 1
 					}
 				}
 			}
@@ -38,8 +49,11 @@ function retweetLatest() {
 					mostPopularCount = hashtags[key]
 				}
 			}
+			console.log(hashtags)
+			console.log(mostPopular)
 			// Tweet which movie is the most popular right now
-			T.post('statuses/update', {status: "The movie " + mostPopular + " is popular right now!"}, function (error, response) {
+			/*
+			T.post('statuses/update', {status: "A lot of people are talking about " + mostPopular + " right now!"}, function (error, response) {
 				if (response) {
 					console.log('Success! Check your bot, it should have retweeted something.')
 				}
@@ -47,7 +61,7 @@ function retweetLatest() {
 				if (error) {
 					console.log('There was an error with Twitter:', error);
 				}
-			})
+			})*/
 			/*
 			// ...then we grab the ID of the tweet we want to retweet...
 			var retweetId = data.statuses[0].id_str;
