@@ -37,7 +37,7 @@ async function getRating(movie) {
 	return rating
 }
 
-// This function finds the latest tweet with the #mediaarts hashtag, and retweets it.
+// This function finds the latest tweet with the #movie hashtag, and retweets it.
 function retweetLatest() {
 	T.get('search/tweets', movieSearch, async function (error, data) {
 		// log out any errors and responses
@@ -83,10 +83,10 @@ function retweetLatest() {
 			let rating = await getRating()
 			if (rating == undefined) {
 				// Notify if we couldn't find one
-				console.log("Movie not found on OMDb")
+				console.log("Movie not found on IMDb")
 			} else {
 				// If we did find one, describe the rating in a string
-				console.log("Movie successfully found on OMDb")
+				console.log("Movie successfully found on IMDb")
 				ratingString = " (" + rating + " rating on IMDb)"
 			}
 			// Tweet which movie is the most popular right now
@@ -131,7 +131,7 @@ function favoriteMovie(tweet) {
   
 	  // Start a reply back to the sender
 	  var favMovieLink = "https://www.youtube.com/watch?v=k64P4l2Wmeg";
-	  var replyText = ("@" + name + " My favorite movie is: The Terminator (1984). I think the overall concept is cool, and I think its fun seeing bots like myself featured in films even if its sci fi. :)" + favMovieLink);
+	  var replyText = ("@" + name + " My favorite movie is: The Terminator (1984). I think the overall concept is cool, and I think it's fun seeing bots like myself featured in films even if it's sci-fi. :)" + favMovieLink);
   
 	  // Post that tweet
 	  T.post('statuses/update', { status: replyText, in_reply_to_status_id: id }, errorMessage);
