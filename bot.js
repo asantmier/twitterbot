@@ -14,7 +14,7 @@ var T = new Twit(require('./config.js'));
 var movieSearch = {q: "#movie", count: 50, result_type: "recent", lang: "en"}; 
 
 // A list of common words that we don't want to include as candidates for most popular movie
-var bannedWords = ["movie", "film", "cinema", "best", "movies", "films"];
+var bannedWords = ["movie", "film", "cinema", "best", "movies", "films", "podcast", "podcasts", "video", ];
 
 //This sets up the twitter username to track mentions
 const twitterUsername = '@MovieBott';
@@ -24,9 +24,6 @@ var stream = T.stream('statuses/filter', { track: twitterUsername });
 
 // This calls the favoriteMovie function once the mention is found
 stream.on('tweet', favoriteMovie);
-
-// This calls the followed function once someone follows the bot
-stream.on('follow', followed);
 
 // Gets the rating of the movie from OMDb API
 async function getRating(movie) {
@@ -152,12 +149,6 @@ function favoriteMovie(tweet) {
 	  }
 	};
 }
-
-// Responds to follows with an @ message
-function followed (eventMessage) {
-	var screenName = eventMessage.source.screen_name;
-	tweetStatus('@'+ screenName + ' Thank you for the follow!');
-};
 
 // Try to retweet something as soon as we run the program...
 retweetLatest();
